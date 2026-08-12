@@ -8,7 +8,7 @@ Perfect for curing writer's block, generating quick RPG session seeds, or just g
 
 🔗 **[Try it live](https://old-mountain-ed9b.imtheonlyone.workers.dev/)** 
 
-![Screenshot of the Adventure Generator]([https://via.placeholder.com/700x400/2c3e50/ffffff?text=Your+Adventure+Here](https://raw.githubusercontent.com/hosseinb1111/Random-Adventure-Generator/refs/heads/main/example.png)) 
+![Screenshot of the Adventure Generator](https://raw.githubusercontent.com/hosseinb1111/Random-Adventure-Generator/refs/heads/main/example.png) 
 
 
 ---
