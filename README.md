@@ -199,15 +199,12 @@ wrangler deploy
 ## 📁 Project Structure
 
 ```text
-random-adventure-generator/
-│
-├── src/
-│   └── index.js
-│
-├── example.png
+Random-Adventure-Generator/
+├── worker.js
+├── wrangler.toml
 ├── README.md
 ├── LICENSE
-└── wrangler.toml
+└── example.png
 ```
 
 ### `src/index.js`
