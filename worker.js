@@ -1048,31 +1048,26 @@ export default {
          ROLL AGAIN / LOADING
          ======================================================= */
 
-      button.addEventListener("click", (event) => {
-        event.preventDefault();
+     button.addEventListener("click", (event) => {
+  event.preventDefault();
 
-        if (button.classList.contains("is-loading")) {
-          return;
-        }
+  if (button.classList.contains("is-loading")) {
+    return;
+  }
 
-        button.classList.add("is-loading");
+  button.classList.add("is-loading");
 
-        overlay.classList.add("is-visible");
-        overlay.setAttribute("aria-hidden", "false");
+  overlay.classList.add("is-visible");
+  overlay.setAttribute("aria-hidden", "false");
 
-        button.setAttribute("aria-busy", "true");
+  button.setAttribute("aria-busy", "true");
 
-        /*
-         * Let the browser paint the loading overlay first.
-         * Then reload the page and let the Worker generate
-         * another random adventure.
-         */
-        requestAnimationFrame(() => {
-          setTimeout(() => {
-            window.location.reload();
-          }, 120);
-        });
-      });
+  // Keep the loader visible for exactly 1 second,
+  // then reload and generate the next adventure.
+  setTimeout(() => {
+    window.location.reload();
+  }, 1000);
+});
 
       /* =======================================================
          CUSTOM CURSOR
