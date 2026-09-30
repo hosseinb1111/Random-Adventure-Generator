@@ -7,7 +7,7 @@ A fun and lightweight **Cloudflare Worker** that generates a unique, whimsical m
 
 Perfect for curing writer's block, generating quick RPG session seeds, or simply giving your imagination a playful nudge.
 
-🔗 **[Try it live](https://random-adventure-generator.ai09.workers.dev/)**
+🔗 **[Try it live](https://random-adventure-generator.hosseinseyedbagheri.workers.dev/)**
 
 ![Screenshot of the Adventure Generator](https://raw.githubusercontent.com/hosseinb1111/Random-Adventure-Generator/refs/heads/main/example.png)
 
