@@ -1,95 +1,115 @@
 // Cloudflare Worker – Random Adventure Generator
 // Custom cursor + mobile optimization + loading state
+// "Roll again" now fetches a fresh adventure via /api/adventure instead of reloading.
+
+// =========================================================
+// DATA POOLS (module scope so both routes can use them)
+// =========================================================
+
+const characters = [
+  "a brave knight",
+  "a clever hacker",
+  "a curious cat",
+  "a time-travelling historian",
+  "a wandering bard",
+  "a retired astronaut",
+  "a mischievous fairy",
+  "a stoic robot",
+  "a fearless pirate",
+  "a young wizard",
+  "a grizzled detective",
+  "a cheerful chef"
+];
+
+const settings = [
+  "in a mystical forest",
+  "on a neon-lit space station",
+  "inside a giant whale",
+  "at the bottom of the ocean",
+  "in a forgotten library",
+  "on a moving train",
+  "in a dreamscape",
+  "on a distant planet",
+  "in a medieval castle",
+  "under a waterfall"
+];
+
+const conflicts = [
+  "must find a lost artifact",
+  "must defeat a terrible monster",
+  "must solve a cryptic riddle",
+  "must escape an endless maze",
+  "must win a cooking contest",
+  "must deliver a secret message",
+  "must repair a broken starship",
+  "must calm a furious dragon",
+  "must break a wicked curse",
+  "must rescue a kidnapped prince"
+];
+
+const twists = [
+  "but the artifact is actually a banana",
+  "but the monster is afraid of butterflies",
+  "but the riddle is just a bad pun",
+  "but the maze changes every minute",
+  "but the contest is judged by ghosts",
+  "but the message is written in emojis",
+  "but the starship runs on laughter",
+  "but the dragon only wants a hug",
+  "but the curse can be lifted with a song",
+  "but the prince is already free"
+];
+
+// =========================================================
+// RANDOM HELPERS
+// =========================================================
+
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+const makeAdventure = () => {
+  const character = pick(characters);
+  const setting = pick(settings);
+  const conflict = pick(conflicts);
+  const twist = pick(twists);
+
+  const story = `${character} ${setting} ${conflict}, ${twist}.`;
+
+  const hue = Math.floor(Math.random() * 360);
+  const bg = `hsl(${hue}, 70%, 90%)`;
+
+  return { story, bg, hue };
+};
+
+// =========================================================
+// WORKER
+// =========================================================
 
 export default {
   async fetch(request) {
-    // =========================================================
-    // DATA POOLS
-    // =========================================================
+    const url = new URL(request.url);
 
-    const characters = [
-      "a brave knight",
-      "a clever hacker",
-      "a curious cat",
-      "a time-travelling historian",
-      "a wandering bard",
-      "a retired astronaut",
-      "a mischievous fairy",
-      "a stoic robot",
-      "a fearless pirate",
-      "a young wizard",
-      "a grizzled detective",
-      "a cheerful chef"
-    ];
+    // -------------------------------------------------------
+    // API ROUTE – returns a fresh adventure as JSON
+    // -------------------------------------------------------
 
-    const settings = [
-      "in a mystical forest",
-      "on a neon-lit space station",
-      "inside a giant whale",
-      "at the bottom of the ocean",
-      "in a forgotten library",
-      "on a moving train",
-      "in a dreamscape",
-      "on a distant planet",
-      "in a medieval castle",
-      "under a waterfall"
-    ];
+    if (url.pathname === "/api/adventure") {
+      const adventure = makeAdventure();
 
-    const conflicts = [
-      "must find a lost artifact",
-      "must defeat a terrible monster",
-      "must solve a cryptic riddle",
-      "must escape an endless maze",
-      "must win a cooking contest",
-      "must deliver a secret message",
-      "must repair a broken starship",
-      "must calm a furious dragon",
-      "must break a wicked curse",
-      "must rescue a kidnapped prince"
-    ];
+      return new Response(JSON.stringify(adventure), {
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+          "Pragma": "no-cache",
+          "Expires": "0"
+        }
+      });
+    }
 
-    const twists = [
-      "but the artifact is actually a banana",
-      "but the monster is afraid of butterflies",
-      "but the riddle is just a bad pun",
-      "but the maze changes every minute",
-      "but the contest is judged by ghosts",
-      "but the message is written in emojis",
-      "but the starship runs on laughter",
-      "but the dragon only wants a hug",
-      "but the curse can be lifted with a song",
-      "but the prince is already free"
-    ];
+    // -------------------------------------------------------
+    // HTML ROUTE
+    // -------------------------------------------------------
 
-    // =========================================================
-    // RANDOM HELPERS
-    // =========================================================
-
-    const pick = (arr) => {
-      return arr[Math.floor(Math.random() * arr.length)];
-    };
-
-    const character = pick(characters);
-    const setting = pick(settings);
-    const conflict = pick(conflicts);
-    const twist = pick(twists);
-
-    // =========================================================
-    // BUILD STORY
-    // =========================================================
-
-    const story = `${character} ${setting} ${conflict}, ${twist}.`;
-
-    // =========================================================
-    // RANDOM BACKGROUND
-    // =========================================================
-
-    const hue = Math.floor(Math.random() * 360);
-    const bg = `hsl(${hue}, 70%, 90%)`;
-
-    // =========================================================
-    // HTML
-    // =========================================================
+    const { story, bg } = makeAdventure();
 
     const html = `<!DOCTYPE html>
 <html lang="en">
@@ -121,6 +141,14 @@ export default {
 
   <style>
     /* =========================================================
+       THEME VARIABLE
+       ========================================================= */
+
+    :root {
+      --bg: ${bg};
+    }
+
+    /* =========================================================
        RESET
        ========================================================= */
 
@@ -134,7 +162,10 @@ export default {
 
     html {
       min-height: 100%;
-      background: ${bg};
+      background: var(--bg);
+
+      transition:
+        background-color 0.35s ease;
     }
 
     body {
@@ -155,7 +186,7 @@ export default {
 
       overflow-x: hidden;
 
-      background: ${bg};
+      background: var(--bg);
 
       color: #1e2b36;
 
@@ -362,6 +393,23 @@ export default {
       line-height: 1.6;
 
       overflow-wrap: anywhere;
+    }
+
+    .story.is-new {
+      animation:
+        story-in 0.4s ease both;
+    }
+
+    @keyframes story-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     /* =========================================================
@@ -641,8 +689,14 @@ export default {
 
       .card,
       .refresh,
-      .loading-overlay {
+      .loading-overlay,
+      html,
+      body {
         transition: none !important;
+      }
+
+      .story.is-new {
+        animation: none !important;
       }
 
       .cor-tip {
@@ -692,7 +746,11 @@ export default {
 
       <h1>⚔️ Your Adventure</h1>
 
-      <div class="story">
+      <div
+        class="story"
+        id="story"
+        aria-live="polite"
+      >
         ${story}
       </div>
 
@@ -1040,34 +1098,109 @@ export default {
     (() => {
       "use strict";
 
+      const root = document.documentElement;
       const body = document.body;
+
       const button = document.getElementById("rollAgain");
       const overlay = document.getElementById("loadingOverlay");
+      const storyEl = document.getElementById("story");
+      const themeMeta =
+        document.querySelector('meta[name="theme-color"]');
 
       /* =======================================================
-         ROLL AGAIN / LOADING
+         LOADER MINIMUM DURATION
          ======================================================= */
 
-     button.addEventListener("click", (event) => {
-  event.preventDefault();
+      const MIN_LOADING_MS = 1000;
 
-  if (button.classList.contains("is-loading")) {
-    return;
-  }
+      /* =======================================================
+         LOADING STATE HELPERS
+         ======================================================= */
 
-  button.classList.add("is-loading");
+      const startLoading = () => {
+        button.classList.add("is-loading");
+        button.setAttribute("aria-busy", "true");
 
-  overlay.classList.add("is-visible");
-  overlay.setAttribute("aria-hidden", "false");
+        overlay.classList.add("is-visible");
+        overlay.setAttribute("aria-hidden", "false");
+      };
 
-  button.setAttribute("aria-busy", "true");
+      const stopLoading = () => {
+        button.classList.remove("is-loading");
+        button.removeAttribute("aria-busy");
 
-  // Keep the loader visible for exactly 1 second,
-  // then reload and generate the next adventure.
-  setTimeout(() => {
-    window.location.reload();
-  }, 1000);
-});
+        overlay.classList.remove("is-visible");
+        overlay.setAttribute("aria-hidden", "true");
+      };
+
+      /* =======================================================
+         SWAP IN THE NEW ADVENTURE
+         ======================================================= */
+
+      const swapAdventure = (data) => {
+        storyEl.textContent = data.story;
+
+        root.style.setProperty("--bg", data.bg);
+
+        if (themeMeta) {
+          themeMeta.setAttribute("content", data.bg);
+        }
+
+        // Re-trigger the little entrance animation.
+        storyEl.classList.remove("is-new");
+        void storyEl.offsetWidth;
+        storyEl.classList.add("is-new");
+      };
+
+      /* =======================================================
+         ROLL AGAIN
+         ======================================================= */
+
+      const roll = async () => {
+        if (button.classList.contains("is-loading")) {
+          return;
+        }
+
+        startLoading();
+
+        const startedAt = performance.now();
+
+        try {
+          const response = await fetch("/api/adventure", {
+            cache: "no-store",
+            headers: {
+              "Accept": "application/json"
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error("Request failed: " + response.status);
+          }
+
+          const data = await response.json();
+
+          // Keep the spinner up for at least MIN_LOADING_MS.
+          const elapsed = performance.now() - startedAt;
+          const remaining = Math.max(0, MIN_LOADING_MS - elapsed);
+
+          if (remaining > 0) {
+            await new Promise((resolve) => {
+              setTimeout(resolve, remaining);
+            });
+          }
+
+          swapAdventure(data);
+          stopLoading();
+        } catch (error) {
+          // Fallback: a full reload always produces a fresh adventure.
+          window.location.reload();
+        }
+      };
+
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        roll();
+      });
 
       /* =======================================================
          CUSTOM CURSOR
@@ -1191,16 +1324,12 @@ export default {
       }
 
       /* =======================================================
-         PREVENT DOUBLE ACTIVATION
+         RESET STATE WHEN RESTORED FROM BFCACHE
          ======================================================= */
 
       window.addEventListener("pageshow", () => {
-        button.classList.remove("is-loading");
-
-        button.removeAttribute("aria-busy");
-
-        overlay.classList.remove("is-visible");
-        overlay.setAttribute("aria-hidden", "true");
+        stopLoading();
+        storyEl.classList.remove("is-new");
       });
 
     })();
